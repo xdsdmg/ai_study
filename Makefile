@@ -1,2 +1,2 @@
 tex:
-	cd record && pdflatex main.tex
+	pdflatex main.tex
