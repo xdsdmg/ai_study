@@ -1,0 +1,7 @@
+\section{LMS算法}
+
+我们需要找到一个$\theta$使$J(\theta)$最小化。让我们使用一种搜索算法，该算法以一个对$\theta$的初始猜测值开始，然后不断调整$\theta$使$J(\theta)$更小，直至收敛至某一个能够使$J(\theta)$最小化的$\theta$。特别地，让我们考虑梯度下降（Gradient Descent）算法，以某个初始值$\theta$开始，不断进行如下更新：
+$$
+  \theta_j:=\theta_j-\alpha\frac{\partial J(\theta)}{\partial \theta_j}
+$$
+（同时对所有$j=0,\ldots,d$使用此更新。）其中，$\alpha$被称为学习率，这是一个非常自然的算法，每次向$J$最陡峭的衰减方向前进一步。

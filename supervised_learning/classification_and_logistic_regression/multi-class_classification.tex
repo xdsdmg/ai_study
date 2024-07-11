@@ -1,0 +1,75 @@
+\section{多分类问题}
+
+考虑这样一个分类问题，响应值$y$满足$y\in\{1,2,\ldots,k\}$。举个例子，我们可能想要将邮件划分为三种类型，比如垃圾邮件、个人邮件及工作邮件，而不是只划分为垃圾邮件与非垃圾邮件（这是一个二分类问题）。标签或响应值仍然是离散的，但可以取两个以上的值。因此我们将使用多项式分布对这种问题进行建模。
+
+在这种情况下，$p(y | x;\theta)$是基于$k$个离散值的分布，这是一个多项式分布。对于包含$k$个值的多项式分布，$\phi_1,\ldots,\phi_k$表示每一种可能的概率，必须满足$\sum^k_{i=1}\phi_i=1$。我们将设计一个参数化模型，在给定输入$x$的前提下，输出满足这个约束的$\phi_1,\ldots,\phi_k$。
+
+我们引入$k$组参数$\theta_1,\ldots,\theta_k$，每一组参数都是空间$\mathbb{R}^d$中的一个向量。根据直觉，我们应该可以使用$\theta_1^Tx,\ldots,\theta_k^Tx$来表示$\phi_1,\ldots,\phi_k$，即概率$P(y=1 | x;\theta),\ldots,P(y=k | x;\theta)$。然而，采用这种直接的办法有两个问题，首先，$\theta_j^Tx$不一定在$[0,1]$内，其次，$\sum^k_{j=1}\theta_j^Tx$不一定为$1$。因此，我们将使用softmax函数将向量$(\theta_1^T x,\ldots,\theta_k^T x)$转化为每个元素都是非负的并且和为$1$的概率向量。
+
+定义softmax函数$\rm{softmax}:\mathbb{R}^k \rightarrow \mathbb{R}^k$为
+
+\begin{equation}
+  \rm{softmax}(t_1,\ldots,t_k)=
+  \begin{bmatrix}
+    \frac{{\rm{exp}} (t_1)}{\sum^k_{j=1}{\rm{exp}} (t_j)} \\
+    \vdots                                                \\
+    \frac{{\rm{exp}} (t_k)}{\sum^k_{j=1}{\rm{exp}} (t_j)} \\
+  \end{bmatrix}
+\end{equation}
+
+softmax函数的输入，向量$t$一般被称为logits，在定义中，softmax函数的输出必为每个元素都是非负的并且和为$1$的概率向量。
+
+令$(t_1,\ldots,t_k)=(\theta_1^Tx,\ldots,\theta_k^Tx)$，将$(t_1,\ldots,t_k)$作为softmax函数的输入，将softmax函数的输出作为概率$P(y=1 | x;\theta),\ldots,P(y=k | x;\theta)$，得到如下概率模型：
+\begin{equation}
+  \begin{bmatrix}
+    P(y=1 | x;\theta) \\
+    \vdots            \\
+    P(y=k | x;\theta) \\
+  \end{bmatrix}
+  =
+  \rm{softmax}(t_1,\ldots,t_k)
+  =
+  \begin{bmatrix}
+    \frac{{\rm{exp}} (\theta_1^T x)}{\sum^k_{j=1}{\rm{exp}} (\theta_j^T x)} \\
+    \vdots                                                                  \\
+    \frac{{\rm{exp}} (\theta_k^T x)}{\sum^k_{j=1}{\rm{exp}} (\theta_j^T x)} \\
+  \end{bmatrix}
+\end{equation}
+为了表示方便，我们令$\phi_i=\frac{{\rm{exp}} (\theta_i^T x)}{\sum^k_{j=1}{\rm{exp}} (\theta_j^T x)}$，上面等式可以简写为：
+\begin{equation}
+  P(y=i|x;\theta) = \phi_i= \frac{{\rm{exp}} (t_i)}{\sum^k_{j=1}{\rm{exp}} (t_j)} = \frac{{\rm{exp}} (\theta_i^T x)}{\sum^k_{j=1}{\rm{exp}} (\theta_j^T x)}
+\end{equation}
+接下来，我们计算一个样例$(x,y)$的负对数-似然（log-likehood）。
+\begin{equation}
+  -\log P(y|x,\theta)=-\log \left( \frac{{\rm{exp}} (t_y)}{\sum^k_{j=1}{\rm{exp}} (t_j)} \right) = -\log \left( \frac{{\rm{exp}} (\theta_y^T x)}{\sum^k_{j=1}{\rm{exp}} (\theta_j^T x)} \right)
+\end{equation}
+因此，训练数据的负对数-似然，即损失函数可以写为：
+\begin{equation} \label{multi-class-loss}
+  \mathcal{l}(\theta) = \sum^n_{i=1} - \log \left( \frac{{\rm{exp}} (\theta_{y^{(i)}}^T x^{(i)})}{\sum^k_{j=1}{\rm{exp}} (\theta_j^T x^{(i)})} \right)
+\end{equation}
+通过模块化上面的等式，可以很方便地定义交叉熵损失（Cross-entropy Loss）$\mathcal{l}_{ce}:\mathbb{R}^k \times \{1,\ldots,k\} \rightarrow \mathbb{R}_{\leq 0}$为：\footnote{这里的命名有些许歧义。一些人将交叉熵损失定义为将概率向量（在我们的定义中为$\phi$）与标签$y$映射为一个实数的函数，称我们的交叉熵损失为softmax-交叉熵损失。我们选择这种命名习惯是因为它与大多数现代深度学习库是一致的，比如PyTorch与Jax。}
+\begin{equation}
+  \mathcal{l}_{ce}((t_1,\ldots,t_k),y)=-\log \left( \frac{{\rm exp}(t_y)}{\sum^k_{j=1}{\rm{exp}} (t_j)} \right)
+\end{equation}
+通过上述等式，我们可以将等式\eqref{multi-class-loss}简写为：
+\begin{equation}
+  \mathcal{l}(\theta) = \sum^n_{i=1} \mathcal{l}_{ce}((\theta_1^T x^{(i)},\ldots,\theta_k^T x^{(i)}),y^{(i)})
+\end{equation}
+并且交叉熵损失也具有一个简单的梯度表示。令$t=(t_1,\ldots,t_k)$，且$\phi_i=\frac{{\rm exp}(t_i)}{\sum^k_{j=1}{\rm exp}(t_j)}$，通过基本微积分，我们可以推导出：
+\begin{equation}
+  \frac{ \partial \mathcal{l}_{ce}(t,y)}{\partial t_i}=\phi_i - 1 \{ y=i \}
+\end{equation}
+% TODO: add ref
+其中，$1\{\cdot\}$为指示函数（Indicator Function），即如果$y=i$，$1\{y=i\}=1$，如果$y \ne i$，$1\{y=i\}=0$。另外，基于矢量表示法我们有如下表示法，该表示在第7节非常有用：
+\begin{equation}
+  \frac{ \partial \mathcal{l}_{ce}(t,y)}{\partial t_i}=\phi_i - e_s
+\end{equation}
+其中，$e_s \in \mathbb{R}^k$为第$s$个自然基向量（Natural Basis Vector，向量的第$i$个元素为$1$，其他元素为$0$），使用链式法则，我们可以得到：
+\begin{equation}
+  \frac{\partial \mathcal{l}_{ce}((\theta_1^T x,\ldots,\theta_k^T x),y)}{\partial \theta_i}=\frac{ \partial \mathcal{l}_{ce}(t,y)}{\partial t_i} \cdot \frac{t_i}{\theta_i} = (\phi_i - 1 \{ y=i \}) \cdot x
+\end{equation}
+因此，损失函数相对于参数$\theta_i$的的梯度为：
+\begin{equation}
+  \frac{ \partial \mathcal{l}(\theta)}{\partial \theta_i} = \sum^n_{j=1} (\phi_i^{(j)} - 1 \{ y^{(j)}=i \}) \cdot x^{(j)}
+\end{equation}
+其中，$\phi_i^{(j)}=\frac{{\rm{exp}} (\theta_{i}^T x^{(j)})}{\sum^k_{s=1}{\rm{exp}} (\theta_s^T x^{(j)})}$为模型将样例$x^{(j)}$预测为$i$的概率。根据上面的梯度公式，可以实现（随机）梯度下降以最小化损失函数$\mathcal{l}(\theta)$。
