@@ -1,5 +1,4 @@
-tex:
-	# pdflatex main.tex
+build:
 	xelatex main.tex
 
 clean:

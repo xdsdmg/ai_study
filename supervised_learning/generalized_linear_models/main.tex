@@ -1,29 +1,32 @@
 \chapter{广义线性模型}
 
-目前，我们已经看过一个回归的案例，以及一个分类的案例。
-在回归的案例中，我们有$y|x;\theta \sim \mathcal{N}(\mu,\sigma^2)$，
-在分类的案例中，我们有$y|x;\theta \sim {\rm Bernoulli}(\phi)$，
-其中，$\mu$与$\phi$为$x$与$\theta$的适当的函数定义。
-在这一章节，我们将展示这两种方法都是广义线性模型（Generalized Linear Models，GLMs）
-\footnote{这一章节的灵感来自于Michael I. Jordan所著的《Learning in graphical models》（未出版的草稿），以及McCullagh与Nelder所著的《Generalized Linear Models (第二版)》}的特例，
-我们也会展示广义线性模型中的其他模型是如何推导以及应用于其他回归与分类问题的。
+目前，我们已经看过一个回归案例与一个分类案例。
+在回归案例中，我们有$y|x;\theta \sim \mathcal{N}(\mu,\sigma^2)$，
+在分类案例中，我们有$y|x;\theta \sim {\rm Bernoulli}(\phi)$，
+其中，$\mu$与$\phi$为以$x$与$\theta$为变量的函数。
+在这一章节中，我们将展示这两种方法皆是广义线性模型（Generalized Linear Models，GLMs）
+\footnote{这一章节的灵感来自于Michael I. Jordan所著的《Learning in graphical models》（未出版的草稿），以及McCullagh与Nelder所著的《Generalized Linear Models (第二版)》。}的特例，
+我们也会展示广义线性模型中的其他模型是如何推导以及是如何应用于其他回归与分类问题的。
 
 \section{指数族}
 
 为了进一步研究GLMs，我们首先定义指数族，
 如果某种分布可以写为如下形式，那么我们认为它属于指数族。
 \begin{equation}
-  p(y;\eta)=b(y){\rm exp}(\eta^T T(y) - a(\eta))
+  \begin{aligned}
+    p(y;\eta) & = b(y){\rm exp}(\eta^T T(y) - a(\eta))           \\
+              & = b(y) \cdot \frac{e^{\eta^T T(y)}}{e^{a(\eta)}}
+  \end{aligned}
   \label{eq:exp_family}
 \end{equation}
 其中，$\eta$被称为分布的\textbf{自然因数}（Natural Parameter）（也被称为\textbf{权威因数}（Canonical Parameter）），
-$T(y)$为\textbf{充分统计量}（Sufficient Statistic）（对于我们所考虑的分布，通常为$T(y)=y$），
+$T(y)$为\textbf{充分统计量}（Sufficient Statistic）（对于我们所考虑的分布，通常$T(y)=y$），
 $a(\eta)$为\textbf{对数分割函数}（Log Partition Function），
-$e^{a(\eta)}$的值通常起到归一化常数的作用，使得$p(y;\eta)$基于$y$求和/积分结果为$1$。
+$e^{-a(\eta)}$通常作为归一化常数，使得$p(y;\eta)$对于$y$求和/积分的结果为$1$。
 
-一组固定的$T$、$a$、$b$值定义了一个以$\eta$为参数的分布集合，当我们改变$\eta$时，我们得到这个集合中不同的分布。
+一组固定的$T$、$a$、$b$定义了一个以$\eta$为参数的分布集合，当我们改变$\eta$时，将得到这个集合中的不同分布。
 
-现在我们将说明伯努利分布与高斯分布只是指数族中的个例。均值为$\phi$的伯努利分布可以写为${\rm Bernoulli}(\phi)$，表示$y \in \{0,1\}$，且$p(y=1;\phi)=\phi$，$p(y=0;\phi)=1-\phi$，改变$\phi$，我们将得到具有不同均值的伯努利分布。现在我们将说明这种通过改变$\phi$得到的伯努利分布族属于指数族。例如，存在$T$、$a$、$b$使得等式（\ref{eq:exp_family}）成为伯努利分布。
+现在我们将说明伯努利分布与高斯分布只是指数族的特例。均值为$\phi$的伯努利分布可以写为${\rm Bernoulli}(\phi)$，表示$y \in \{0,1\}$，且$p(y=1;\phi)=\phi$，$p(y=0;\phi)=1-\phi$。改变$\phi$，将得到具有不同均值的伯努利分布。现在我们将说明这种通过改变$\phi$得到的伯努利分布族属于指数族，即存在$T$、$a$、$b$使得等式（\ref{eq:exp_family}）成为伯努利分布。
 
 我们将伯努利分布写为：
 \begin{equation}
@@ -33,17 +36,17 @@ $e^{a(\eta)}$的值通常起到归一化常数的作用，使得$p(y;\eta)$基�
               & ={\rm exp} \left( y \log \left( \frac{\phi}{1-\phi} \right) + \log(1-\phi) \right)
   \end{aligned}
 \end{equation}
-因此，自然因数为$\eta=\log(\phi / (1-\phi))$，有趣地，如果我们逆转$\eta$的定义，通过$\eta$求解$\phi$，可以得到$\phi=1 / (1+e^{-\eta})$，这是熟悉的sigmoid函数，当我们将推到逻辑回归推导为GLM时，这一点会再次出现。为了完成伯努利分布的指数族分布公式表达，我们有：
+因此，自然因数为$\eta=\log(\phi / (1-\phi))$。有趣地，如果我们根据定义，通过$\eta$求解$\phi$，可以得到$\phi=1 / (1+e^{-\eta})$，这是熟悉的sigmoid函数，当我们将逻辑回归推导为GLM时，这一点会再次出现。为了完成伯努利分布的指数族分布公式表达，我们有：
 \begin{align*}
   T(y)    & = y               \\
   a(\eta) & = -\log(1-\phi)   \\
           & =  \log(1+e^\eta) \\
   b(y)    & =1
 \end{align*}
-这说明使用合适的$T$、$a$、$b$可以将伯努利分布改写为等式（\ref{eq:exp_family}）的形式。
+这说明使用合适的$T$、$a$、$b$就可以将伯努利分布改写为等式（\ref{eq:exp_family}）的形式。
 
 现在我们开始考虑高斯分布。回想一下，当推导线性回归时，$\sigma^2$的值对我们关于$\theta$与$h_\theta(x)$的最终选择是没有任何影响的。
-因此，对于$\sigma^2$，我们可以选择任何值，为了简化后续推导，设$\sigma^2=1$\footnote{如果保留$\sigma^2$作为变量，同样可以展示高斯分布属于指数族，其中，$\eta \in \mathbb{R}^2$为取决于$\mu$与$\sigma$的二维向量。为了GLMs的目的，然而，参数$\sigma^2$可以通过考虑更一般的指数族定义$p(y;\eta,\tau)=b(a,\tau){\rm exp}((\eta^T T(y) - a(\eta))/c(\tau))$来处理，其中，$\tau$被称为\textbf{分散因数}（Dispersion Parameter，译者注：这里翻译可能不准确），且对于高斯分布，$c(\tau)=\sigma^2$，但考虑到我们上面的简化，我们不再需要对后续例子进行更一般的定义。}。然后，我们有
+因此，对于$\sigma^2$，我们可以选择任何值，为了简化后续推导，设$\sigma^2=1$\footnote{如果保留$\sigma^2$作为变量，同样可以推导出高斯分布属于指数族，其中，$\eta \in \mathbb{R}^2$为取决于$\mu$与$\sigma$的二维向量。为了GLMs的目的，然而，参数$\sigma^2$可以通过考虑更一般的指数族定义$p(y;\eta,\tau)=b(a,\tau){\rm exp}((\eta^T T(y) - a(\eta))/c(\tau))$来处理，其中，$\tau$被称为\textbf{分散因数}（Dispersion Parameter，译者注：这里翻译可能不准确），且对于高斯分布，$c(\tau)=\sigma^2$，但考虑到我们上面的简化，我们不再需要对后续例子进行更一般的定义。}。然后，我们有
 \begin{align*}
   p(y;\mu) & =\frac{1}{\sqrt{2\pi}}\exp \left( -\frac{1}{2} (y-\mu)^2 \right)                                               \\
            & =\frac{1}{\sqrt{2\pi}}\exp \left( -\frac{1}{2} y^2 \right) \cdot \exp \left( \mu y - \frac{1}{2} \mu^2 \right)
@@ -63,4 +66,25 @@ $e^{a(\eta)}$的值通常起到归一化常数的作用，使得$p(y;\eta)$基�
 
 假设你想构建一个模型，这个模型可以基于某些特征$x$（例如，商店促销活动、最近的广告、天气、今天是周几等）来预测，在任一小时内，访问你的商店的顾客数量（或者你的网站的页面浏览数）$y$。我们知道对于访客数量泊松分布通常可以给出一个较好的模型。了解这个后，我们应该如何为我们的问题提出一个模型呢？幸运的是，泊松分布属于指数族，因此我们可以使用广义线性模型。在这一章节中，我们将介绍为这种问题构建广义线性模型的方法。
 
-更一般地，考虑一个分类或回归问题，我们想将某个随机变量$y$的值作为$x$的函数进行预测。为推导出这个问题的GLM，我们将对$y$的状态分布（在给出$x$的前提下）以及我们的模型做出以下三个假设：
+更一般地，考虑一个分类或回归问题，我们想将某个随机变量$y$的值作为$x$的函数进行预测，为推导出这个问题的GLM，我们将对$y$的状态分布（在给定$x$的前提下）以及我们的模型做出以下三个假设：
+
+\begin{enumerate}
+  \item $y|x;\theta \sim {\rm ExpontentialFamily(\eta)}$，例如，给定$x$与$\theta$，$y$服从某个带有参数$\eta$的指数分布。
+  \item 给定$x$，我们的目标是预测给定$x$后$T(y)$的值。在我们的大多数例子中，我们有$T(y)=y$，这意味着我们希望学习到的假设$h$的输出$h(x)$满足$h(x)={\rm E}[y|x]$。（注意，无论是逻辑回归还是线性回归，这个假设对于$h_{\theta}(x)$的选择都成立，例如，在逻辑回归中，我们有$h_\theta=p(y=1|x;\theta)=0 \cdot p(y=0|x;\theta) + 1 \cdot p(y=1|x;\theta) = {\rm E}[y|x;\theta]$。）
+  \item 自然因数$\eta$与输入$x$线性相关：$\eta = \theta^T x$。（或者，如果$\eta$为向量值，那么$\eta_i = \theta_i^T x$。）
+\end{enumerate}
+
+第三个假设似乎是上述中最不合理的，在设计GLMs的方案中，相较于假设本身，它可能被视为一种“设计选择”更好。这三个假设可以让我们推到出一类非常简洁的学习算法，称为GLMs，这类算法具有很多令人满意的特性，比如易于学习。并且得到的模型对于建模基于$y$的不同类型的分布非常有效，例如，我们将简短地展示逻辑回归与普通最小二乘法皆可以推导为GLMs。
+
+\subsection{普通最小二乘法}
+
+为了展示普通最小二乘法是GLM模型家族的特例，假设目标变量$y$（在GLM的术语中也被称为响应变量）是连续的，并且我们将给定$x$后的$y$的状态分布建模为高斯分布$\mathcal{N}(\mu,\sigma^2)$。（这里$\mu$可能依赖于$x$。）因此，我们令上述分布${\rm ExponentailFamily}(\eta)$为高斯分布。如之前所见，在将高斯分布转为指数族分布的等式中，我们有$\mu=\eta$。因此，我们有
+\begin{equation}
+  \begin{aligned}
+    h_\theta(x) & = {\rm E}[y|x;\theta] \\
+                & = \mu                 \\
+                & = \eta                \\
+                & = \theta^T x
+  \end{aligned}
+\end{equation}
+第一个等式遵循假设2；第二个等式遵循事实$y|x;\theta \sim \mathcal{N}(\mu,\sigma^2)$，因此它的期望值由$\mu$给定；第三个等式遵顼假设1（我们之前的推导已说明在将高斯分布转为指数族分布的等式中$\mu=\eta$）；最后一个等式遵循假设3。
