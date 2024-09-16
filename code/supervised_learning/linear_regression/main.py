@@ -5,8 +5,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 DATA_FILE_PATH = "/home/zhangchi/workarea/code/ai_study/code/data/boston.csv"
-ALPHA = 0.1
-ITER_TOTAL = 100
+ALPHA = 0.001
+ITER_TOTAL = 10
 
 
 class LinearRegressionMachine:
@@ -18,7 +18,7 @@ class LinearRegressionMachine:
 
         # Examples is the input of X, x_0 = 1
         self.examples: np.ndarray = np.hstack((np.ones((data.shape[0], 1)), data))
-        self.examples = self.examples[:20, :]
+        self.examples = self.examples[:20, :]  # TODO: need op
 
         # TODO: tmp code
         self.examples[:, 1] = self.examples[:, 6].copy()
@@ -28,7 +28,8 @@ class LinearRegressionMachine:
         self.feature_num = feature_num if feature_num <= self.dim else self.dim
         self.iter_total = iter_total
         # The parameters of hypotheses, i.e. h(x) = \theta^T * x
-        self.theta = np.random.rand(self.feature_num + 1)
+        # self.theta = np.random.rand(self.feature_num + 1)
+        self.theta = np.array([10.1, 11.1])
         self.examples_total: int = self.examples.shape[0]
 
     def hypotheses(self, x: np.ndarray[float]) -> float:
@@ -56,7 +57,7 @@ class LinearRegressionMachine:
     def draw_loss_func(self):
         begin = -100
         end = 100
-        total = 11
+        total = 101
 
         X, Y = np.meshgrid(
             np.linspace(begin, end, total), np.linspace(begin, end, total)
@@ -72,7 +73,15 @@ class LinearRegressionMachine:
         fig = plt.figure()
 
         ax = fig.add_subplot(111, projection="3d")
-        ax.scatter(X, Y, Z, s=10)
+        # ax.scatter(X, Y, Z, s=10)
+        # ax.plot_surface(X, Y, Z)
+
+        self.theta = np.array([10.0, 10.0])
+        res = self.run()
+        ax.plot(res[:, 0], res[:, 1], res[:, 2])
+        ax.scatter(res[:, 0], res[:, 1], res[:, 2], s=10)
+        print(res)
+
         ax.set_xlabel(r"$\theta_0$")
         ax.set_ylabel(r"$\theta_1$")
         ax.set_zlabel("Loss Function")
@@ -81,17 +90,29 @@ class LinearRegressionMachine:
         # plt.colorbar()
 
         # plt.savefig("loss_func.png", dpi=600, format="png")
+
         plt.show()
 
-    def run(self):
-        for _ in range(self.iter_total):
-            print(self.theta)
+    def run(self) -> np.ndarray:
+        res = np.empty((self.iter_total, 3))
+
+        for k in range(self.iter_total):
             for j in range(self.theta.size):
                 sum = 0
                 for i in range(self.examples_total):
                     x_i = self.examples[i, :]
                     sum += self.partial_derivative_theta(j, x_i)
                 self.theta[j] -= self.alpha * sum
+
+                if j == 0:
+                    res[k, 0] = self.theta[j]
+
+                if j == 1:
+                    res[k, 1] = self.theta[j]
+
+            res[k, 2] = self.loss_func()
+
+        return res
 
 
 if __name__ == "__main__":
