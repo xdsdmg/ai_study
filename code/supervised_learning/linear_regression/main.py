@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 DATA_FILE_PATH = "/home/zhangchi/workarea/code/ai_study/code/data/boston.csv"
 ALPHA = 0.001
-ITER_TOTAL = 10
+ITER_TOTAL = 200000
 
 
 class LinearRegressionMachine:
@@ -29,7 +29,7 @@ class LinearRegressionMachine:
         self.iter_total = iter_total
         # The parameters of hypotheses, i.e. h(x) = \theta^T * x
         # self.theta = np.random.rand(self.feature_num + 1)
-        self.theta = np.array([10.1, 11.1])
+        self.theta = np.array([100.0, 100.0])
         self.examples_total: int = self.examples.shape[0]
 
     def hypotheses(self, x: np.ndarray[float]) -> float:
@@ -73,14 +73,13 @@ class LinearRegressionMachine:
         fig = plt.figure()
 
         ax = fig.add_subplot(111, projection="3d")
-        # ax.scatter(X, Y, Z, s=10)
+        ax.scatter(X, Y, Z, s=10)
         # ax.plot_surface(X, Y, Z)
 
-        self.theta = np.array([10.0, 10.0])
+        self.theta = np.array([100.0, 100.0])
         res = self.run()
-        ax.plot(res[:, 0], res[:, 1], res[:, 2])
-        ax.scatter(res[:, 0], res[:, 1], res[:, 2], s=10)
-        print(res)
+        ax.plot(res[:, 0], res[:, 1], res[:, 2], c="red")
+        ax.scatter(res[:, 0], res[:, 1], res[:, 2], s=40, c="red")
 
         ax.set_xlabel(r"$\theta_0$")
         ax.set_ylabel(r"$\theta_1$")
@@ -94,7 +93,10 @@ class LinearRegressionMachine:
         plt.show()
 
     def run(self) -> np.ndarray:
-        res = np.empty((self.iter_total, 3))
+        res = np.empty((self.iter_total + 1, 3))
+        res[0, 0] = self.theta[0]
+        res[0, 1] = self.theta[1]
+        res[0, 2] = self.loss_func()
 
         for k in range(self.iter_total):
             for j in range(self.theta.size):
@@ -105,31 +107,37 @@ class LinearRegressionMachine:
                 self.theta[j] -= self.alpha * sum
 
                 if j == 0:
-                    res[k, 0] = self.theta[j]
+                    res[k + 1, 0] = self.theta[j]
 
                 if j == 1:
-                    res[k, 1] = self.theta[j]
+                    res[k + 1, 1] = self.theta[j]
 
-            res[k, 2] = self.loss_func()
+            res[k + 1, 2] = self.loss_func()
 
         return res
 
 
 if __name__ == "__main__":
-    machine = LinearRegressionMachine(
+    m = LinearRegressionMachine(
         data_file_path=DATA_FILE_PATH, alpha=ALPHA, feature_num=1, iter_total=ITER_TOTAL
     )
 
-    # point_size = 2
-    # x = machine.examples[:, 6]
-    # y = machine.examples[:, machine.dim + 1]
+    point_size = 2
+    x = m.examples[:, 1]
+    y = m.examples[:, m.dim]
 
-    # plt.scatter(x, y, point_size)
-    # plt.xlabel("RM")
-    # plt.ylabel("MDEV")
-    # plt.grid(True)
-    # plt.savefig("test.png", dpi=600, format="png")
+    plt.scatter(x, y, point_size)
+    plt.xlabel("RM")
+    plt.ylabel("MDEV")
+    plt.grid(True)
 
-    # machine.run()
+    m.run()
+    print(m.theta, m.loss_func())
+    x = np.linspace(5, 8, 10)
+    y = np.array([m.theta[0] + m.theta[1] * e for e in x])
+    plt.scatter(x, y, point_size)
+    plt.plot(x, y)
 
-    machine.draw_loss_func()
+    plt.savefig("test.png", dpi=600, format="png")
+
+    # m.draw_loss_func()
