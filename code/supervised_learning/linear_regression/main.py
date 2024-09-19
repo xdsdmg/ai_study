@@ -62,15 +62,13 @@ class LinearRegressionMachine:
 
         return (self.hypotheses(x) - y) * x_j
 
-    def run(self) -> np.ndarray:
+    def batch_gradient_descent(self) -> np.ndarray:
         res = np.empty((self.__iter_total + 1, self.__feature_num + 2))
-
         for i in range(self.__theta.size):
             res[0, i] = self.__theta[i]
+        res[0, self.__theta.size] = self.loss_func()
 
-        loss = self.loss_func()
-
-        res[0, self.__theta.size] = loss
+        loss = res[0, self.__theta.size]
 
         for k in range(self.__iter_total):
             if loss <= self.__threshold:
@@ -87,6 +85,39 @@ class LinearRegressionMachine:
 
             loss = self.loss_func()
             res[k + 1, self.__theta.size] = loss
+
+        return res
+
+    def stochastic_gradient_descent(self) -> np.ndarray:
+        res = np.empty((self.__iter_total + 1, 1))
+        for i in range(self.__theta.size):
+            res[0, i] = self.__theta[i]
+        res[0, self.__theta.size] = self.loss_func()
+
+        loss = res[0, self.__theta.size]
+
+        flag = False
+
+        for k in range(self.__iter_total):
+            if loss <= self.__threshold:
+                break
+
+            for i in range(self.__examples_total):
+                x_i = self.__examples[i, :]
+
+                row = np.empty((self.__iter_total + 1, 1))
+                for j in range(self.__theta.size):
+                    self.__theta[j] -= self.__alpha * self.partial_derivative_theta(
+                        j, x_i
+                    )
+                    row[0, j] = self.__theta[j]
+
+                row[0, self.__theta.size] = self.loss_func()
+                loss = row[0, self.__theta.size]
+                res = np.vstack((res, row))
+
+                if loss<=self.__threshold:
+                    break outer_loop_label
 
         return res
 
@@ -112,7 +143,7 @@ def draw_loss_func(m: LinearRegressionMachine):
     # ax.plot_surface(X, Y, Z)
 
     m.set_theta(np.array([100.0, 100.0]))
-    res = m.run()
+    res = m.batch_gradient_descent()
     ax.plot(res[:, 0], res[:, 1], res[:, 2], c="red")
     ax.scatter(res[:, 0], res[:, 1], res[:, 2], s=40, c="red")
 
