@@ -6,8 +6,8 @@ import matplotlib.pyplot as plt
 
 DATA_FILE_PATH = "/home/zhangchi/workarea/code/ai_study/code/data/boston.csv"
 ALPHA = 0.001
-ITER_TOTAL = 100
-THRESHOLD = 150
+ITER_TOTAL = 10
+THRESHOLD = 200
 
 
 class LinearRegressionMachine:
@@ -63,7 +63,7 @@ class LinearRegressionMachine:
         return (self.hypotheses(x) - y) * x_j
 
     def batch_gradient_descent(self) -> np.ndarray:
-        res = np.empty((self.__iter_total + 1, self.__feature_num + 2))
+        res = np.empty((1, self.__feature_num + 2))
         for i in range(self.__theta.size):
             res[0, i] = self.__theta[i]
         res[0, self.__theta.size] = self.loss_func()
@@ -73,6 +73,8 @@ class LinearRegressionMachine:
         for k in range(self.__iter_total):
             if loss <= self.__threshold:
                 break
+
+            row = np.empty((1, self.__feature_num + 2))
 
             for j in range(self.__theta.size):
                 pd = 0.0
@@ -81,31 +83,32 @@ class LinearRegressionMachine:
                     pd += self.partial_derivative_theta(j, x_i)
 
                 self.__theta[j] -= self.__alpha * pd
-                res[k + 1, j] = self.__theta[j]
+                row[0, j] = self.__theta[j]
 
-            loss = self.loss_func()
-            res[k + 1, self.__theta.size] = loss
+            row[0, self.__theta.size] = self.loss_func()
+            loss = row[0, self.__theta.size]
+            res = np.vstack((res, row))
 
         return res
 
     def stochastic_gradient_descent(self) -> np.ndarray:
-        res = np.empty((self.__iter_total + 1, 1))
+        res = np.empty((1, self.__feature_num + 2))
         for i in range(self.__theta.size):
             res[0, i] = self.__theta[i]
         res[0, self.__theta.size] = self.loss_func()
 
         loss = res[0, self.__theta.size]
 
-        flag = False
+        converge = False
 
         for k in range(self.__iter_total):
-            if loss <= self.__threshold:
+            if converge:
                 break
 
             for i in range(self.__examples_total):
                 x_i = self.__examples[i, :]
 
-                row = np.empty((self.__iter_total + 1, 1))
+                row = np.empty((1, self.__feature_num + 2))
                 for j in range(self.__theta.size):
                     self.__theta[j] -= self.__alpha * self.partial_derivative_theta(
                         j, x_i
@@ -116,8 +119,9 @@ class LinearRegressionMachine:
                 loss = row[0, self.__theta.size]
                 res = np.vstack((res, row))
 
-                if loss<=self.__threshold:
-                    break outer_loop_label
+                if loss <= self.__threshold:
+                    converge = True
+                    break
 
         return res
 
@@ -139,7 +143,7 @@ def draw_loss_func(m: LinearRegressionMachine):
     fig = plt.figure()
 
     ax = fig.add_subplot(111, projection="3d")
-    ax.scatter(X, Y, Z, s=10)
+    # ax.scatter(X, Y, Z, s=10)
     # ax.plot_surface(X, Y, Z)
 
     m.set_theta(np.array([100.0, 100.0]))
