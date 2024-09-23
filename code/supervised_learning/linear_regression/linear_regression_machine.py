@@ -33,18 +33,21 @@ class LinearRegressionMachine:
 
         self.__theta = theta
 
-    def hypotheses(self, x: np.ndarray[float]) -> float:
+    def h(self, x: np.ndarray[float]) -> float:
+        """
+        hypotheses
+        """
         return np.dot(self.__theta, x)
 
     def loss_func(self) -> float:
-        sum = 0.0
+        res = 0.0
 
         for i in range(self.__examples_total):
             x_i = self.__examples[i, :][: self.__feature_num + 1]
             y_i = self.__examples[i, :][self.__dim]
-            sum += pow((self.hypotheses(x_i) - y_i), 2)
+            res += pow((self.h(x_i) - y_i), 2)
 
-        return 0.5 * sum
+        return 0.5 * res
 
     def partial_derivative_theta(self, j: int, example: np.ndarray[float]) -> float:
         end = example.size - 1
@@ -53,7 +56,7 @@ class LinearRegressionMachine:
         y = example[end]
         x_j = x[j]
 
-        return (self.hypotheses(x) - y) * x_j
+        return (self.h(x) - y) * x_j
 
     def batch_gradient_descent(self) -> np.ndarray:
         res = np.empty((1, self.__feature_num + 2))
