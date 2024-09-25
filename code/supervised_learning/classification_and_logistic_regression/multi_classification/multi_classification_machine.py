@@ -41,7 +41,7 @@ class MultiClassificationMachine:
         x = example[: self.__feature_num + 1]
         y = example[end]
 
-        phi_i = self.p(y, x)
+        phi_i = self.p(i, x)
 
         return (phi_i - (1 if y == i else 0)) * x
 
