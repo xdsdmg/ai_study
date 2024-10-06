@@ -106,9 +106,8 @@ class LinearRegressionMachine:
 
                 row = np.empty((1, self.__feature_num + 2))
                 for j in range(self.__theta.size):
-                    self.__theta[j] -= self.__alpha * self.partial_derivative_theta(
-                        j, x_i
-                    )
+                    pd = self.partial_derivative_theta(j, x_i)
+                    self.__theta[j] -= self.__alpha * pd
                     row[0, j] = self.__theta[j]
 
                 row[0, self.__theta.size] = self.loss_func()

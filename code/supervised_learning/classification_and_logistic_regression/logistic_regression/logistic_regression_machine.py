@@ -47,13 +47,12 @@ class LogisticRegressionMachine:
     def likehood(self) -> float:
         res = 0.0
         log = math.log
-        h = self.h
+        p = self.p
 
         for i in range(self.__examples_total):
             x_i = self.__examples[i, :][: self.__feature_num + 1]
             y_i = self.__examples[i, :][self.__dim]
-            h_x_i = h(x_i)
-            res += y_i * log(h_x_i) + (1 - y_i) * log(1 - h_x_i)
+            res += log(p(y_i, x_i))
 
         return -res
 
@@ -67,6 +66,10 @@ class LogisticRegressionMachine:
         return (self.h(x) - y) * x_j
 
     def batch_gradient_descent(self) -> np.ndarray:
+        """
+        Find the value of theta minimizes likehood
+        """
+
         res = np.empty((1, self.__feature_num + 2))
         for i in range(self.__theta.size):
             res[0, i] = self.__theta[i]
@@ -78,13 +81,39 @@ class LogisticRegressionMachine:
             for j in range(self.__theta.size):
                 pd = 0.0
                 for i in range(self.__examples_total):
-                    x_i = self.__examples[i, :]
-                    pd += self.partial_derivative_theta(j, x_i)
+                    example = self.__examples[i, :]
+                    pd += self.partial_derivative_theta(j, example)
 
                 self.__theta[j] -= self.__alpha * pd
                 row[0, j] = self.__theta[j]
 
             row[0, self.__theta.size] = self.likehood()
             res = np.vstack((res, row))
+
+        return res
+
+    def stochastic_gradient_descent(self) -> np.ndarray:
+        """
+        Find the value of theta minimizes likehood
+        """
+
+        res = np.empty((1, self.__feature_num + 2))
+        for i in range(self.__theta.size):
+            res[0, i] = self.__theta[i]
+        res[0, self.__theta.size] = self.likehood()
+
+        for k in range(self.__iter_total):
+            row = np.empty((1, self.__feature_num + 2))
+
+            for i in range(self.__examples_total):
+                example = self.__examples[i, :]
+
+                for j in range(self.__theta.size):
+                    pd = self.partial_derivative_theta(j, example)
+                    self.__theta[j] -= self.__alpha * pd
+                    row[0, j] = self.__theta[j]
+
+                row[0, self.__theta.size] = self.likehood()
+                res = np.vstack((res, row))
 
         return res

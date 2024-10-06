@@ -1,0 +1,58 @@
+\documentclass[letterpaper,11pt]{article}
+\usepackage{xeCJK}
+\usepackage{bm}
+\usepackage{geometry}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage[cal=boondoxo, scr=dutchcal]{mathalfa}
+\usepackage{multirow}
+\usepackage[unicode, CJKbookmarks=true]{hyperref}
+
+\numberwithin{equation}{section}
+
+\geometry{a4paper,left=2cm,right=2cm,top=2cm,bottom=2cm}
+
+\usepackage{setspace}
+\setstretch{1.1}
+\setlength{\parskip}{0.1\baselineskip}
+
+\usepackage{graphicx}
+\usepackage{caption}
+
+\begin{document}
+
+\title{牛顿法}
+\author{张驰}
+\maketitle
+
+\begin{equation}
+    \theta := \theta - H^{-1} \nabla_{\theta}\mathcal{l}(\theta)
+\end{equation}
+
+在我们的例子中$\theta$为$K$列矩阵，其中$\theta_i$为第$i$列。
+
+\begin{equation}
+    \mathcal{l}(\theta)=-\sum_{i=1}^{N}\log \left( \frac{e^{\theta^T_{y^{(i)}} \cdot x^{(i)}}}{\sum_{j=1}^{k} e^{\theta^T_k x^{(i)}}} \right)
+\end{equation}
+
+\begin{equation}
+    \frac{\partial\mathcal{l}(\theta)}{\partial \theta_i} = \sum_{j=1}^{N} \left(\frac{e^{\theta^T_i  x^{(j)}}}{\sum_{k=1}^{K} e^{\theta^T_k x^{(j)}}} - 1\{y^{(j)}=i\} \right) \cdot x^{(j)}
+\end{equation}
+
+\begin{equation}
+    \theta_i := \theta_i - H^{-1} \frac{\partial\mathcal{l}(\theta)}{\partial \theta_i} \footnote{$H(\theta_i^{(k+1)}-\theta_i^{(k)})=\frac{\partial\mathcal{l}(\theta)}{\partial \theta_i}\big|_{\theta_i=\theta_i^{k+1}}-\frac{\partial\mathcal{l}(\theta)}{\partial \theta_i}\big|_{\theta_i=\theta_i^{k}}$}
+\end{equation}
+
+其中，$H=\frac{\partial^2\mathcal{l}(\theta)}{\partial^2 \theta_i}$；$x^{(j)}$为第$j$个样例的特征，以列向量表示；$y^{(j)}$为第$j$个样例的结果。
+
+\begin{equation}
+    \begin{aligned}
+        \frac{\partial^2\mathcal{l}(\theta)}{\partial^2 \theta_i} & = \sum_{j=1}^{N}  \frac{\partial \left(\frac{e^{\theta^T_i  x^{(j)}}}{\sum_{k=1}^{K} e^{\theta^T_k x^{(j)}}} - 1\{y^{(j)}=i\} \right) \cdot x^{(j)} }{\partial \theta_i}                                                                       \\
+                                                                  & = \sum_{j=1}^{N} x^{(j)} \cdot \frac{\partial \left( \frac{e^{\theta^T_i  x^{(j)}}}{\sum_{k=1}^{K} e^{\theta^T_k x^{(j)}}} \right) }{\partial \theta_i}                                                                                        \\
+                                                                  & = \sum_{j=1}^{N} x^{(j)} \cdot  \frac{(x^{(j)} e^{\theta^T_i  x^{(j)}}) \cdot \sum_{k=1}^{K} e^{\theta^T_k x^{(j)}} - e^{\theta^T_i  x^{(j)}} \cdot (x^{(j)} e^{\theta^T_i  x^{(j)}}) }{\left( \sum_{k=1}^{K} e^{\theta^T_k x^{(j)}}\right)^2} \\
+                                                                  & =  \sum_{j=1}^{N} x^{(j)} \cdot  \frac{x^{(j)} e^{\theta^T_i  x^{(j)}} \cdot \left(\sum_{k=1}^{K} e^{\theta^T_k x^{(j)}} - e^{\theta^T_i  x^{(j)}} \right)}{\left( \sum_{k=1}^{K} e^{\theta^T_k x^{(j)}}\right)^2}                             \\
+                                                                  & = \sum_{j=1}^{N} x^{(j)} (x^{(j)})^T \cdot  e^{\theta^T_i  x^{(j)}} \cdot \frac{ \sum_{k=1}^{K} e^{\theta^T_k x^{(j)}} - e^{\theta^T_i  x^{(j)}} }{\left( \sum_{k=1}^{K} e^{\theta^T_k x^{(j)}}\right)^2}
+    \end{aligned}
+\end{equation}
+
+\end{document}

@@ -72,3 +72,24 @@ class MultiClassificationMachine:
             res.append(self.likehood())
 
         return res
+
+    def stochastic_gradient_descent(self) -> np.ndarray:
+        """
+        Find the value of theta minimizes likehood
+        """
+
+        res = [self.likehood()]
+
+        for k in range(self.__iter_total):
+            row = np.empty((1, self.__feature_num + 2))
+
+            for i in range(self.__examples_total):
+                example = self.__examples[i, :]
+
+                for j in range(self.__theta.shape[0]):
+                    pd = self.partial_derivative_theta(j, example)
+                    self.__theta[j] -= self.__alpha * pd
+
+                res.append(self.likehood())
+
+        return res

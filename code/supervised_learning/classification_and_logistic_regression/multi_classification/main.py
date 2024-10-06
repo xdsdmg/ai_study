@@ -24,6 +24,12 @@ def get_res(m: mcm.MultiClassificationMachine, x: np.ndarray) -> int:
             max_index = i
             max = p
 
+    print(
+        "x: {}, p: {}, predict res: {}".format(
+            [float(e) for e in x], [round(float(e), 2) for e in p_l], max_index
+        )
+    )
+
     return max_index
 
 
@@ -39,7 +45,7 @@ if __name__ == "__main__":
         iter_total=ITER_TOTAL,
     )
 
-    res = m.batch_gradient_descent()
+    res = m.stochastic_gradient_descent()
 
     df_t = pd.read_csv(TEST_FILE_PATH)
     data_t = df_t.values

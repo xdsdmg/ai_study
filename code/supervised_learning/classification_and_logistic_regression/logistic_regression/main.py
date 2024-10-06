@@ -19,7 +19,7 @@ if __name__ == "__main__":
         iter_total=ITER_TOTAL,
     )
 
-    res = m.batch_gradient_descent()
+    res = m.stochastic_gradient_descent()
 
     df_t = pd.read_csv(TEST_FILE_PATH)
     data_t = df_t.values
