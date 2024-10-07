@@ -26,7 +26,7 @@ class LinearRegressionMachine:
     def set_theta(self, theta: np.ndarray) -> None:
         if theta.shape != self.__theta.shape:
             raise Exception(
-                "The shape of input ({}) is not equal to theta ({})".format(
+                "The shape of input ({}) is not equal to theta ({}).".format(
                     theta.shape, self.__theta.shape
                 )
             )

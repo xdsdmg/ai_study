@@ -1,6 +1,12 @@
 import numpy as np
 import math
 
+import sys
+
+sys.path.append("../../..")
+
+import math_utils.linalg as linalg
+
 
 class MultiClassificationMachine:
     def __init__(
@@ -57,7 +63,7 @@ class MultiClassificationMachine:
 
         return -res
 
-    def batch_gradient_descent(self) -> np.ndarray:
+    def batch_gradient_descent(self) -> list[float]:
         res = [self.likehood()]
 
         for k in range(self.__iter_total):
@@ -73,7 +79,7 @@ class MultiClassificationMachine:
 
         return res
 
-    def stochastic_gradient_descent(self) -> np.ndarray:
+    def stochastic_gradient_descent(self) -> list[float]:
         """
         Find the value of theta minimizes likehood
         """
@@ -90,6 +96,47 @@ class MultiClassificationMachine:
                     pd = self.partial_derivative_theta(j, example)
                     self.__theta[j] -= self.__alpha * pd
 
+                res.append(self.likehood())
+
+        return res
+
+    def fisher_scoring(self) -> list[float]:
+        """
+        Use Newton Method to minimize likehood
+        """
+
+        res = [self.likehood()]
+
+        for k in range(self.__iter_total):
+            for i in range(self.__theta.shape[0]):
+                # Hessian matrix
+                H = np.zeros((self.__feature_num + 1, self.__feature_num + 1))
+                pd = np.zeros(self.__feature_num + 1)
+
+                for j in range(self.__examples_total):
+                    example = self.__examples[j, :]
+                    x = example[: self.__feature_num + 1]
+
+                    # e = []
+                    # for d in range(self.__theta.shape[0]):
+                    #     try:
+                    #         e.append(math.exp(np.dot(self.__theta[d], x)))
+                    #     except OverflowError:
+                    #         print(np.dot(self.__theta[d], x))
+                    #         return
+
+                    e = [
+                        math.exp(np.dot(self.__theta[d], x))
+                        for d in range(self.__theta.shape[0])
+                    ]
+                    e_sum = sum(e)
+
+                    H_i = (e[i] * (e_sum - e[i]) / e_sum**2) * x.reshape(-1, 1) * x
+
+                    H = np.add(H, H_i)
+                    pd += self.partial_derivative_theta(i, example)
+
+                self.__theta[i] -= np.dot(linalg.inv(H), pd)
                 res.append(self.likehood())
 
         return res

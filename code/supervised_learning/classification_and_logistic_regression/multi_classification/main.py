@@ -1,11 +1,14 @@
 import multi_classification_machine as mcm
 import pandas as pd
 import numpy as np
+import sys
+
+sys.path.append("../../math_utils")
 
 DATA_FILE_PATH = "/home/zhangchi/workarea/code/ai_study/code/data/IRIS-3.csv"
 TEST_FILE_PATH = "/home/zhangchi/workarea/code/ai_study/code/data/IRIS-3-test.csv"
 ALPHA = 0.001
-ITER_TOTAL = 1000
+ITER_TOTAL = 5
 FEATRUE_NUM = 4
 CLASS_NUM = 3
 
@@ -45,7 +48,7 @@ if __name__ == "__main__":
         iter_total=ITER_TOTAL,
     )
 
-    res = m.stochastic_gradient_descent()
+    res = m.fisher_scoring()
 
     df_t = pd.read_csv(TEST_FILE_PATH)
     data_t = df_t.values
@@ -68,3 +71,7 @@ if __name__ == "__main__":
             100 * (examples.shape[0] - errors) / examples.shape[0]
         )
     )
+
+    print("")
+
+    print(f"likehood: {res}")
