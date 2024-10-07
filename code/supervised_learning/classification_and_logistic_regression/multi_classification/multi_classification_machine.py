@@ -29,6 +29,8 @@ class MultiClassificationMachine:
         self.__theta = np.random.rand(self.__class_num, self.__feature_num + 1)
         self.__examples_total: int = self.__examples.shape[0]
 
+        print(f"theta:\n{self.__theta}")
+
     def p(self, y, x) -> float:
         p_list = np.dot(self.__theta, x)
 
@@ -59,7 +61,12 @@ class MultiClassificationMachine:
         for i in range(self.__examples_total):
             x_i = self.__examples[i, :][: self.__feature_num + 1]
             y_i = self.__examples[i, :][self.__dim]
-            res += log(p(y_i, x_i))
+
+            phi = p(y_i, x_i)
+            if phi == 0.0:
+                res -= sys.float_info.max
+            else:
+                res += log(phi)
 
         return -res
 
@@ -117,20 +124,19 @@ class MultiClassificationMachine:
                     example = self.__examples[j, :]
                     x = example[: self.__feature_num + 1]
 
-                    # e = []
-                    # for d in range(self.__theta.shape[0]):
-                    #     try:
-                    #         e.append(math.exp(np.dot(self.__theta[d], x)))
-                    #     except OverflowError:
-                    #         print(np.dot(self.__theta[d], x))
-                    #         return
+                    e = []
+                    for d in range(self.__theta.shape[0]):
+                        try:
+                            e.append(math.exp(np.dot(self.__theta[d], x)))
+                        except OverflowError:
+                            print(np.dot(self.__theta[d], x))
+                            return
 
-                    e = [
-                        math.exp(np.dot(self.__theta[d], x))
-                        for d in range(self.__theta.shape[0])
-                    ]
+                    # e = [
+                    #     math.exp(np.dot(self.__theta[d], x))
+                    #     for d in range(self.__theta.shape[0])
+                    # ]
                     e_sum = sum(e)
-
                     H_i = (e[i] * (e_sum - e[i]) / e_sum**2) * x.reshape(-1, 1) * x
 
                     H = np.add(H, H_i)
