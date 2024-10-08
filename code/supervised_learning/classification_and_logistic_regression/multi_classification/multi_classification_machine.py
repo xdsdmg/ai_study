@@ -7,6 +7,8 @@ sys.path.append("../../..")
 
 import math_utils.linalg as linalg
 
+MAX = sys.float_info.max
+
 
 class MultiClassificationMachine:
     def __init__(
@@ -25,17 +27,17 @@ class MultiClassificationMachine:
         self.__feature_num = feature_num if feature_num <= self.__dim else self.__dim
         self.__iter_total = iter_total
         # The parameters of hypotheses, i.e. h(x) = \theta^T * x
-        # self.__theta = np.random.uniform(0, 10, self.__feature_num + 1)
-        self.__theta = np.random.rand(self.__class_num, self.__feature_num + 1)
+        self.__theta = np.random.rand(self.__class_num, self.__feature_num + 1) / 1000
         self.__examples_total: int = self.__examples.shape[0]
-
-        print(f"theta:\n{self.__theta}")
 
     def p(self, y, x) -> float:
         p_list = np.dot(self.__theta, x)
 
         for i in range(p_list.size):
-            p_list[i] = pow(math.e, p_list[i])
+            try:
+                p_list[i] = math.exp(p_list[i])
+            except OverflowError:
+                p_list[i] = MAX
 
         sum = 0
         for p in p_list:
@@ -64,7 +66,7 @@ class MultiClassificationMachine:
 
             phi = p(y_i, x_i)
             if phi == 0.0:
-                res -= sys.float_info.max
+                res -= MAX
             else:
                 res += log(phi)
 
@@ -124,18 +126,10 @@ class MultiClassificationMachine:
                     example = self.__examples[j, :]
                     x = example[: self.__feature_num + 1]
 
-                    e = []
-                    for d in range(self.__theta.shape[0]):
-                        try:
-                            e.append(math.exp(np.dot(self.__theta[d], x)))
-                        except OverflowError:
-                            print(np.dot(self.__theta[d], x))
-                            return
-
-                    # e = [
-                    #     math.exp(np.dot(self.__theta[d], x))
-                    #     for d in range(self.__theta.shape[0])
-                    # ]
+                    e = [
+                        math.exp(np.dot(self.__theta[d], x))
+                        for d in range(self.__theta.shape[0])
+                    ]
                     e_sum = sum(e)
                     H_i = (e[i] * (e_sum - e[i]) / e_sum**2) * x.reshape(-1, 1) * x
 
