@@ -54,4 +54,6 @@ def inv(matrix: np.ndarray) -> np.ndarray:
             f"The current matrix is not a square matrix (rows: {matrix.shape[0]}, columns: {matrix.shape[1]}), only a square matrix can calculate the inverse matrix."
         )
 
+    print(matrix)
+
     return (1 / det(matrix)) * adj(matrix)
