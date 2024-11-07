@@ -26,6 +26,10 @@
 \maketitle
 
 \begin{equation}
+    {\rm sign}(z)=\begin{cases} 1, &z\geq0\\ -1, &z<0\end{cases}
+\end{equation}
+
+\begin{equation}
     h_{{\vec{w}},b}(\vec{x})={\rm sign}(\vec{w} \cdot \vec{x}+b)
 \end{equation}
 
@@ -33,20 +37,30 @@
     \hat{\gamma}^{(i)}=y^{(i)}(\vec{w} \cdot \vec{x}^{(i)}+b)
 \end{equation}
 
-对$\vec{w}$与$b$缩放不会改变$h_{{\vec{w}},b}(\vec{x})$的实际结果。
-
 \begin{equation}
-    \hat{\gamma} = \mathop{min} \limits_{i=1,\dots,n} \frac{\hat{\gamma}^{(i)}}{\left \| \vec{w} \right \|}
+    {\rm margin}(\vec{w},b) = \mathop{min} \limits_{i=1,\dots,n} \frac{\hat{\gamma}^{(i)}}{\left \| \vec{w} \right \|}
 \end{equation}
+
+几何边距：
 
 \begin{equation}
     \begin{aligned}
-        max_{\vec{w},b} \quad & \gamma                                                                 \\
-        s.t. \quad            & y^{(i)}(\vec{w} \cdot \vec{x}^{(i)} + b) \ge \gamma, \quad i=1,\dots,n
+        max_{\vec{w},b} \quad & {\rm margin}(\vec{w},b)                                                                                                                                       \\
+        s.t. \quad            & \frac{1}{\left \| \vec{w} \right \|} \cdot y^{(i)}(\vec{w} \cdot \vec{x}^{(i)} + b) \ge {\rm margin}(\vec{w},b), \quad i=1,\dots,n
     \end{aligned}
 \end{equation}
 
-由于$\vec{w}$与$b$可以任意缩放，令$\gamma=1$。
+由于任意缩放$\vec{w}$与$b$不会改变$h_{{\vec{w}},b}(\vec{x})$的实际结果，令$\left \| \vec{w} \right \| = 1$，函数边界：
+
+\begin{equation}
+    \begin{aligned}
+        max_{\vec{w},b} \quad & {\rm margin}(\vec{w},b)                                                                 \\
+        s.t. \quad            & y^{(i)}(\vec{w} \cdot \vec{x}^{(i)} + b) \ge {\rm margin}(\vec{w},b), \quad i=1,\dots,n \\
+                              & \left \| \vec{w} \right \| = 1
+    \end{aligned}
+\end{equation}
+
+令$\gamma=1$
 
 \begin{equation}
     \begin{aligned}

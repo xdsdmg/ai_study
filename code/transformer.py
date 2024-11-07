@@ -2,6 +2,7 @@
 
 import numpy as np
 import torch
+from torch._prims_common import Tensor
 import torch.nn as nn
 
 
@@ -56,8 +57,34 @@ class MultiHeadAttention(nn.Module):
         nn.init.normal_(self.W_V.weight, mean=0, std=np.sqrt(2.0 / (d_model + d_v)))
         nn.init.normal_(self.W_out.weight, mean=0, std=np.sqrt(2.0 / (d_model + d_v)))
 
-    def forward(self, Q, K, V, attn_mask, **kwargs):
+    def forward(self, Q, K, V, attn_mask: torch.Tensor, **kwargs):
+        def tensor(t) -> torch.Tensor:
+            return torch.Tensor(t)
+
         N = Q.size(0)
         q_len, k_len = Q.size(1), K.size(1)
         d_k, d_v = self.d_k, self.d_v
         num_heads = self.num_heads
+
+        Q = tensor(self.W_Q(Q)).view(N, -1, num_heads, d_k).transpose(1, 2)
+        K = tensor(self.W_K(K)).view(N, -1, num_heads, d_k).transpose(1, 2)
+        V = tensor(self.W_V(V)).view(N, -1, num_heads, d_v).transpose(1, 2)
+
+        if attn_mask is not None:
+            assert attn_mask.size() == (N, q_len, k_len)
+            attn_mask = attn_mask.unsqueeze(1).repeat(1, num_heads, 1, 1)
+            attn_mask = attn_mask.bool()
+
+        scores: torch.Tensor = torch.matmul(Q, K.transpose(-1, -2)) / np.sqrt(d_k)
+
+        if attn_mask is not None:
+            scores.masked_fill_(attn_mask, -1e4)
+            attns = torch.softmax(scores, dim=-1)
+            attns = self.dropout(attns)
+
+        output = torch.matmul(attns, V)
+
+        output = output.transpose(1, 2).contiguous().reshape(N, -1, d_v * num_heads)
+        output = self.W_out(output)
+
+        return output
