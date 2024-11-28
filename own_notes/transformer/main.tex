@@ -1,0 +1,59 @@
+\documentclass[letterpaper,11pt]{article}
+\usepackage{xeCJK}
+\usepackage{bm}
+\usepackage{geometry}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage[cal=boondoxo, scr=dutchcal]{mathalfa}
+\usepackage{multirow}
+\usepackage[unicode, CJKbookmarks=true]{hyperref}
+
+\numberwithin{equation}{section}
+
+\geometry{a4paper,left=2cm,right=2cm,top=2cm,bottom=2cm}
+
+\usepackage{setspace}
+\setstretch{1.1}
+\setlength{\parskip}{0.1\baselineskip}
+
+\usepackage{graphicx}
+\usepackage{caption}
+
+\begin{document}
+
+\title{Transformer}
+\author{张驰}
+\maketitle
+
+\section{引子}
+
+以一个将德语翻译为英语的任务为例，如下：
+$$
+    \begin{aligned}
+        {\rm ich\;mochte\;ein\;bier} \longrightarrow & \; {\rm i\;want\;a\;beer} \\
+        {\rm ich\;mochte\;ein\;cola} \longrightarrow & \; {\rm i\;want\;a\;coke}
+    \end{aligned}
+$$
+将两个德语短句翻译为英语短句。
+
+\section{}
+
+\begin{equation}
+    Q = \begin{bmatrix}
+        Q_{1,1}            & Q_{1,2}            & \cdots & Q_{1,{\rm d\_model}}            \\
+        Q_{2,1}            & Q_{2,2}            & \cdots & Q_{2,{\rm d\_model}}            \\
+        \vdots             & \vdots             & \ddots & \vdots                          \\
+        Q_{{\rm len\_q},1} & Q_{{\rm len\_q},2} & \cdots & Q_{{\rm len\_q},{\rm d\_model}}
+    \end{bmatrix}
+\end{equation}
+
+\begin{equation}
+    K = \begin{bmatrix}
+        K_{1,1}            & K_{1,2}            & \cdots & K_{1,{\rm d\_model}}            \\
+        K_{2,1}            & K_{2,2}            & \cdots & K_{2,{\rm d\_model}}            \\
+        \vdots             & \vdots             & \ddots & \vdots                          \\
+        K_{{\rm len\_k},1} & K_{{\rm len\_k},2} & \cdots & K_{{\rm len\_k},{\rm d\_model}}
+    \end{bmatrix}
+\end{equation}
+
+\end{document}
