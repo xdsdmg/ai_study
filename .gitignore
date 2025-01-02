@@ -1,5 +1,6 @@
 venv
 __pycache__
+FashionMNIST
 
 ## Core latex/pdflatex auxiliary files:
 *.aux
